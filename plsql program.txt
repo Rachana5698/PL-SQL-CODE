@@ -1,0 +1,411 @@
+1) sum of the 2 number
+
+declare 
+first_num number := &enter_1st_number;
+second_num number := &enter_2nd_number;
+begin
+dbms_output.put_line (first_num + second_num);
+end;
+
+2) reverse the integer 
+
+set SERVEROUTPUT ON;
+DECLARE
+v_num number := &enter_number;
+rev number ;
+begin
+rev := 0;
+while v_num >0 LOOP
+rev := (rev*10) + mod(v_num,10);
+v_num := floor(v_num/10);
+END LOOP ;
+dbms_output.put_line('reverse number'||rev);
+end;
+
+
+3) find factorial 
+
+set SERVEROUTPUT ON;
+DECLARE
+num number := &enter_number;
+fact number ;
+begin
+fact := 1;
+while num >=1 LOOP
+fact := fact * num;
+num := num -1;
+END LOOP ;
+dbms_output.put_line('reverse number'||fact);
+end;
+
+
+4) FIBONACCI SERIES
+
+set SERVEROUTPUT ON;
+DECLARE
+num number := &enter_number;
+fib0 number := 0;
+fib1 number := 1;
+result number := 0;
+begin
+dbms_output.put(fib0||' '||fib1||' ');
+while num >=1 LOOP
+result := fib0 + fib1;
+dbms_output.put(result||' ');
+fib0 := fib1;
+fib1 := result;
+num := num - 1;
+END LOOP ;
+dbms_output.put_line('');
+end;
+
+
+
+5) CHECK WEATHER PALINDROM OR NOT
+
+SET SERVEROUTPUT ON;
+DECLARE
+    s VARCHAR2(20) := '&enter_string';
+    l VARCHAR2(10);
+    t VARCHAR2(10);
+BEGIN
+    FOR i IN REVERSE 1..length(s) LOOP
+        l := substr(s, i, 1); -- substr(input_string,start_position,length)
+        t := t
+             || ''
+             || l;
+    END LOOP;
+
+    IF t = s THEN
+        dbms_output.put_line('palindrom');
+    ELSE
+        dbms_output.put_line('not palindrome');
+    END IF;
+END;
+
+6) CHECK WEATHER NUMBER IS PALINDROME OR NOT
+
+SET SERVEROUTPUT ON;
+DECLARE
+    num INTEGER := &enter_num;
+    org_num integer := num;
+    temp_sum INTEGER := 0;
+    modu integer := 0;
+BEGIN
+    WHILE num <> 0 LOOP
+        modu := MOD(num, 10);
+        temp_sum := temp_sum + modu;
+        num := trunc(num / 10);
+    END LOOP;
+
+    IF org_num = temp_sum then 
+    dbms_output.put_line('palindrome');
+    else
+    dbms_output.put_line('not palindrome');
+    end if;
+END;
+
+7) FIND SUM AND AVG OF 3 NUMBERS
+
+set serveroutput on;
+declare
+one integer := &enter_one;
+two integer := &enter_two;
+three integer := &enter_thr;
+sumOfNum integer;
+avgOfNum integer;
+begin
+sumOfNum := one + two + three;
+avgOfNum := sumOfNum /3;
+dbms_output.put_line('sum='||sumOfNum||' avg='||avgOfNum);
+end;
+
+8) Floyd’s triangle in PL/SQL
+
+Examples:
+
+Input: 1-29
+Output:
+ 1
+ 2 3
+ 4 5 6
+ 7 8 9 10
+ 11 12 13 14 15
+ 16 17 18 19 20 21
+ 22 23 24 25 26 27 28
+
+
+
+9) creating DML trigger for insert/update/delete
+
+SET SERVEROUTPUT ON;
+create or replace trigger biud_superhero BEFORE
+    INSERT OR UPDATE OR DELETE ON superhero
+    FOR EACH ROW
+    enable
+DECLARE
+    v_user VARCHAR2(10);
+BEGIN
+    SELECT user INTO v_user FROM dual;
+    IF INSERTING THEN
+        dbms_output.put_line('inseting');
+    ELSIF DELETING THEN
+        dbms_output.put_line('deleted by '||v_user);
+    ELSIF UPDATING THEN
+        dbms_output.put_line('updated by '||v_user);
+    END IF;
+END;
+
+10)How to AUDIT YOUR TABLE using DML trigger
+
+create or replace trigger dml_audit_detail
+before insert or update or delete on superhero
+for each row
+enable 
+declare
+v_user VARCHAR2(30);
+v_date varchar2(30);
+begin
+select user,to_char(sysdate,'DD-MM-YYYY HH:Mi:SS') into v_user,v_date from dual;
+if INSERTING then 
+insert into dml_audit values(:NEW.super_name,NULL,v_user,v_date,'insert');
+elsif DELETING then
+insert into dml_audit values(NULL,:OLD.super_name,v_user,v_date,'delete');
+elsif updating then 
+insert into dml_audit values(:NEW.super_name,:OLD.super_name,v_user,v_date,'update');
+end if;
+end;
+
+
+11) CREATE TRIGGER TO SYNC TABLE WITH BKP TABLE
+
+create or replace trigger sync_data
+after insert or update or delete on superhero
+for each row 
+enable 
+begin
+if inserting then 
+insert into superhero_bkp(super_name) values(:NEW.super_name);
+elsif updating then 
+update superhero_bkp
+set super_name = :NEW.super_name
+where super_name = :OLD.super_name;
+elsif deleting then 
+delete from superhero_bkp where super_name = :OLD.super_name;
+end if ;
+end;
+
+12) create ddl trigger to audit ddl data
+
+create or replace trigger ddl_audit_trig
+after DDL on schema 
+enable
+begin
+insert into ddl_audit values(sysdate, sys_context('USERENV','CURRENT_USER'),ora_dict_obj_type, ora_dict_obj_name, ora_sysevent);
+end;
+
+13) create simple cursor
+set SERVEROUTPUT ON;
+declare 
+v_name varchar2(20);
+
+CURSOR simp_cur IS select emp_name from emp where emp_id >= 1;
+BEGIN
+  OPEN simp_cur;
+  LOOP
+  FETCH simp_cur INTO v_name ;
+  EXIT WHEN simp_cur%NOTFOUND;
+  dbms_output.put_line(v_name);
+  END LOOP;
+END;
+
+14) create parameterized cursor 
+set SERVEROUTPUT ON;
+declare 
+v_name varchar2(20);
+
+CURSOR simp_cur(arg_emp_id number) IS select emp_name from emp where emp_id >= arg_emp_id;
+BEGIN
+  OPEN simp_cur(2);
+  LOOP
+  FETCH simp_cur INTO v_name ;
+  EXIT WHEN simp_cur%NOTFOUND;
+  dbms_output.put_line(v_name);
+  END LOOP;
+END;
+
+15) create default cursor 
+set SERVEROUTPUT ON;
+declare 
+v_name varchar2(20);
+v_id number;
+CURSOR simp_cur(arg_emp_id number:= 1) IS select emp_name,emp_id from emp where emp_id >= arg_emp_id ;
+BEGIN
+  OPEN simp_cur;
+  LOOP
+  FETCH simp_cur INTO v_name, v_id ;
+  EXIT WHEN simp_cur%NOTFOUND;
+  dbms_output.put_line(v_name || v_id );
+  
+  END LOOP;
+  CLOSE simp_cur;
+END;
+
+16) cursor for loop
+set SERVEROUTPUT on
+declare 
+cursor for_loop_cur IS select emp_name,emp_id from emp where emp_id >=  1;
+begin
+for l_idx in for_loop_cur loop
+dbms_output.put_line(l_idx.emp_name || l_idx.emp_id);
+end loop;
+end;
+
+17) for loop of parameterized cursor
+set SERVEROUTPUT ON;
+declare 
+v_name varchar2(20);
+
+CURSOR for_prmtr_cur(arg_emp_name emp.emp_name%TYPE) IS select emp_name,emp_id from emp where trim(emp_name) = arg_emp_name;
+BEGIN
+  for args in for_prmtr_cur('rachana') loop
+  dbms_output.put_line(args.emp_name || args.emp_id);
+  END LOOP;
+END;
+
+18) table_based record data type (%ROWTYPE) example 1 to select all data from select statement 
+set SERVEROUTPUT ON;
+declare
+v_name emp%ROWTYPE;
+begin
+select * into v_name from emp where emp_id = 1;
+DBMS_OUTPUT.put_line(v_name.emp_id ||  '  '||v_name.emp_name);
+END;
+
+19)table_based record data type (%ROWTYPE) example 1 to select all data from select statement 
+set serveroutput on;
+declare 
+v_name emp%ROWTYPE;
+begin
+select emp_name into v_name.emp_name from emp where emp_id =1;
+dbms_output.put_line(v_name.emp_name);
+end ;
+
+20) cursor based record variable
+set SERVEROUTPUT ON;
+declare 
+
+cursor cur_bsd_recrd is select emp_name,emp_id from emp where emp_id=1;
+cur_arg cur_bsd_recrd%ROWTYPE;
+
+begin
+open cur_bsd_recrd;
+fetch cur_bsd_recrd into cur_arg;
+dbms_output.put_line(cur_arg.emp_id|| ' '|| cur_arg.emp_name);
+end;
+
+21) cursor based record to select multiple column using single var
+set serveroutput on;
+declare 
+cursor slct_mul_rcrd_cur is select * from emp where emp_id =1;
+cur_arg slct_mul_rcrd_cur%ROWTYPE;
+begin
+open slct_mul_rcrd_cur;
+loop
+fetch slct_mul_rcrd_cur into cur_arg;
+exit when slct_mul_rcrd_cur%NOTFOUND;
+dbms_output.put_line(cur_arg.emp_id|| ' '|| cur_arg.emp_name);
+end loop;
+end;
+
+hr_evnt_audit(event_type, logon_date, logon_time, logoff_date, logoff_time)
+22) db / system event trigger  for logon schema 
+create or replace hr_logon_audit
+after LOGON ON SCHEMA
+BEGIN
+insert into hr_evnt_audit values( ora_sysevent, sysdate, to_char(sysdate, 'HH:Mi:SS'), NULL, NULL);
+commit;
+end;
+
+23) db/ system event trigger for logoff schema
+
+
+create or replace hr_logon_audit
+after LOGOFF ON SCHEMA
+BEGIN
+insert into hr_evnt_audit values( ora_sysevent, NULL, NULL,sysdate, to_char(sysdate, 'HH:Mi:SS'));
+commit;
+end;
+
+24) IF WANT TO track login logoff detail for all schema then make trigger in system( which have admin priviledge)
+create or replace hr_logon_audit
+after LOGOFF ON DATABASE
+BEGIN
+insert into hr_evnt_audit values( ora_sysevent, NULL, NULL,sysdate, to_char(sysdate, 'HH:Mi:SS'));
+commit;
+end;
+// same for logon
+
+25) create trigger for start_up of the database which will trigger when u connect with the db for first time
+set serverouput on;
+create or replace trigger tr_strtup_audit 
+after startup on database 
+begin 
+insert into START_UP_AUDIT values (ora_sysevent ,sysdate,to_char(sysdate,'HH:Mi:SS')
+);
+end;
+
+26) instead of trigger for insert into views
+create or replace trigger inst_of_trig
+instead of insert on inst_of_view
+for each row
+enable
+begin
+insert into trainer(full_name) values(:NEW.full_name);
+insert into subject(subject_name) values(:NEW.subject_name);
+end;
+
+27) instead of trigger for update (not working)
+create or replace trigger inst_of_updt_trig
+instead of update on inst_of_view
+for each row
+enable
+begin
+update trainer set full_name = :NEW.full_name
+where full_name  = :OLD.full_name;
+
+update subject set subject_name = :NEW.subject_name 
+where subject_name = :OLD.subject_name;
+
+end;
+
+28) ceate instead of delete trigger
+
+create or replace trigger inst_of_delt_trig
+instead of delete on inst_of_view
+for each row
+enable
+begin
+delete from trainer where full_name = :OLD.full_name;
+delete from subject_name where subject_name = :OLD.subject_name;
+
+end;
+
+29) create function to calculate circle area and call it 
+create or replace function circle_area(radius integer  )
+ return number  is
+pi CONSTANT number := 3.14;
+area number(10,4);
+begin
+area := pi*(radius*radius);
+return area;
+end;
+
+
+set serveroutput on;
+declare 
+radius integer := &enter_radius;
+begin
+dbms_output.put_line(circle_area(radius));
+end;
+
